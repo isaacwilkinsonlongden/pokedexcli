@@ -13,6 +13,17 @@ func (c *Client) GetLocationList(url *string) (LocationListResponse, error) {
 		requestURL = *url
 	}
 
+	val, ok := c.cache.Get(requestURL)
+	if ok {
+		locationListResponse := LocationListResponse{}
+		err := json.Unmarshal(val, &locationListResponse)
+		if err != nil {
+			return LocationListResponse{}, err
+		}
+
+		return locationListResponse, nil
+	}
+
 	res, err := http.Get(requestURL)
 	if err != nil {
 		return LocationListResponse{}, err
@@ -27,6 +38,7 @@ func (c *Client) GetLocationList(url *string) (LocationListResponse, error) {
 	if res.StatusCode > 299 {
 		return LocationListResponse{}, fmt.Errorf("response failed with status code: %d", res.StatusCode)
 	}
+	c.cache.Add(requestURL, body)
 
 	locationListResponse := LocationListResponse{}
 	err = json.Unmarshal(body, &locationListResponse)
