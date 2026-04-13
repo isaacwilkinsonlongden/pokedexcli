@@ -10,7 +10,12 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(cfg *Config) error
+}
+
+type Config struct {
+	Next     *string
+	Previous *string
 }
 
 func getCommands() map[string]cliCommand {
@@ -25,11 +30,22 @@ func getCommands() map[string]cliCommand {
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
+		"map": {
+			name:        "map",
+			description: "Displays next map locations",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Displays previous map locations",
+			callback:    commandMapb,
+		},
 	}
 }
 
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
+	cfg := &Config{}
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -43,7 +59,7 @@ func startRepl() {
 
 		command, ok := getCommands()[words[0]]
 		if ok {
-			err := command.callback()
+			err := command.callback(cfg)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -51,23 +67,6 @@ func startRepl() {
 			fmt.Println("Unknown command")
 		}
 	}
-}
-
-func commandExit() error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-	return nil
-}
-
-func commandHelp() error {
-	fmt.Println("Welcome to the Pokedex!")
-	fmt.Println("Usage:")
-	fmt.Println()
-	for _, value := range getCommands() {
-		fmt.Printf("%s: %s\n", value.name, value.description)
-	}
-
-	return nil
 }
 
 func cleanInput(text string) []string {
