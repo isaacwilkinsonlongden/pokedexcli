@@ -12,7 +12,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(cfg *Config) error
+	callback    func(cfg *Config, areaName string) error
 }
 
 type Config struct {
@@ -43,6 +43,11 @@ func getCommands() map[string]cliCommand {
 			description: "Displays previous map locations",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Displays pokemon found at area",
+			callback:    commandExplore,
+		},
 	}
 }
 
@@ -59,9 +64,14 @@ func startRepl(cfg *Config) {
 			continue
 		}
 
+		var arg string
+		if len(words) > 1 {
+			arg = words[1]
+		}
+
 		command, ok := getCommands()[words[0]]
 		if ok {
-			err := command.callback(cfg)
+			err := command.callback(cfg, arg)
 			if err != nil {
 				fmt.Println(err)
 			}
